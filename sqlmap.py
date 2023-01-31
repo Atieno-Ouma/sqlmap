@@ -115,28 +115,48 @@ def modulePath():
 
 def checkEnvironment():
     try:
-        os.path.isdir(modulePath())
+        if not os.path.isdir(modulePath()):
+            raise UnicodeEncodeError
     except UnicodeEncodeError:
-        errMsg = "your system does not properly handle non-ASCII paths. "
-        errMsg += "Please move the sqlmap's directory to the other location"
-        logger.critical(errMsg)
+        logger.critical("System does not handle non-ASCII paths. Move sqlmap's directory to another location.")
         raise SystemExit
 
     if LooseVersion(VERSION) < LooseVersion("1.0"):
-        errMsg = "your runtime environment (e.g. PYTHONPATH) is "
-        errMsg += "broken. Please make sure that you are not running "
-        errMsg += "newer versions of sqlmap with runtime scripts for older "
-        errMsg += "versions"
-        logger.critical(errMsg)
+        logger.critical(
+            "Your runtime environment is broken. Ensure you're not running newer sqlmap with older runtime scripts.")
         raise SystemExit
 
-    # Patch for pip (import) environment
     if "sqlmap.sqlmap" in sys.modules:
-        for _ in ("cmdLineOptions", "conf", "kb"):
-            globals()[_] = getattr(sys.modules["lib.core.data"], _)
+        for var in ("cmdLineOptions", "conf", "kb"):
+            globals()[var] = getattr(sys.modules["lib.core.data"], var)
 
-        for _ in ("SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException", "SqlmapUserQuitException"):
-            globals()[_] = getattr(sys.modules["lib.core.exception"], _)
+        for var in (
+        "SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException", "SqlmapUserQuitException"):
+            globals()[var] = getattr(sys.modules["lib.core.exception"], var)
+    # try:
+    #     os.path.isdir(modulePath())
+    # except UnicodeEncodeError:
+    #     errMsg = "your system does not properly handle non-ASCII paths. "
+    #     errMsg += "Please move the sqlmap's directory to the other location"
+    #     logger.critical(errMsg)
+    #     raise SystemExit
+    #
+    # if LooseVersion(VERSION) < LooseVersion("1.0"):
+    #     errMsg = "your runtime environment (e.g. PYTHONPATH) is "
+    #     errMsg += "broken. Please make sure that you are not running "
+    #     errMsg += "newer versions of sqlmap with runtime scripts for older "
+    #     errMsg += "versions"
+    #     logger.critical(errMsg)
+    #     raise SystemExit
+    #
+    # # Patch for pip (import) environment
+    # if "sqlmap.sqlmap" in sys.modules:
+    #     for _ in ("cmdLineOptions", "conf", "kb"):
+    #         globals()[_] = getattr(sys.modules["lib.core.data"], _)
+    #
+    #     for _ in ("SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException", "SqlmapUserQuitException"):
+    #         globals()[_] = getattr(sys.modules["lib.core.exception"], _)
+    #
 
 def main():
     """
